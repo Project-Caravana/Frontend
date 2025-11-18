@@ -7,6 +7,7 @@ const api = axios.create({
 })
 // export const getTodos = ()=>api.get("/getAll");
 export const registerAdmin = (payload)=>api.post("/auth/register", payload);
+export const login = (payload)=>api.post("/auth/login", payload);
 // export const deleteTodo = (id)=>api.delete(`/${id}`);
 // export const getOne = (id)=>api.get(`/${id}`);
 // export const updateParcial = (id, data)=>api.patch(`/${id}`, data);

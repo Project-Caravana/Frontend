@@ -12,9 +12,9 @@ const useToast = () => {
   const removeToast = (id) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
-
-  const ToastContainer = () => (
-    <>
+  
+  const ToastContainer = React.useMemo(() => () => (
+    <div className="fixed top-4 right-4 z-50 space-y-2">
       {toasts.map(toast => (
         <Toast
           key={toast.id}
@@ -23,8 +23,8 @@ const useToast = () => {
           onClose={() => removeToast(toast.id)}
         />
       ))}
-    </>
-  );
+    </div>
+  ), [toasts]);
 
   return { showToast, ToastContainer };
 };
