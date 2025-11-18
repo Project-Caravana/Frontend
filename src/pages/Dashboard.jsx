@@ -10,7 +10,7 @@ const getEmpresaId = () => {
         const funcionarioString = localStorage.getItem('funcionario');
         if (funcionarioString) {
             const funcionario = JSON.parse(funcionarioString);
-            return funcionario.empresa?.id || funcionario.empresa?._id; 
+            return funcionario.empresa?.id || funcionario.empresa?._id || funcionario.idEmpresa; 
         }
         return null;
     } catch (e) {
@@ -21,6 +21,7 @@ const getEmpresaId = () => {
 const Dashboard = () => {
     // 1. Estados para armazenar os dados
     const [totalFuncionarios, setTotalFuncionarios] = React.useState('...');
+    const [totalVeiculos, setTotalVeiculos] = React.useState('...');
     const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
@@ -28,6 +29,7 @@ const Dashboard = () => {
         
         if (!empresaId) {
             setTotalFuncionarios('N/A');
+            setTotalVeiculos('N/A');
             setLoading(false);
             return;
         }
@@ -37,8 +39,9 @@ const Dashboard = () => {
             try {
                 const response = await getEmpresaDashboard(empresaId);
                 // Acessa o total de funcionários do objeto de resposta
-                const total = response.data.estatisticas.funcionarios.total; 
-                setTotalFuncionarios(total);
+                const total = response.data.estatisticas; 
+                setTotalFuncionarios(total.funcionarios.ativos);
+                setTotalVeiculos(total.carros.total);
 
             } catch (error) {
                 console.error('Erro ao buscar dashboard:', error);
@@ -63,7 +66,7 @@ const Dashboard = () => {
                     <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
                         <div>
                             <h2 className="text-xl font-semibold text-gray-700">Total de Veículos</h2>
-                            <p className="text-3xl text-[#FF860B] mt-2">15</p>
+                            <p className="text-3xl text-[#FF860B] mt-2">{totalVeiculos}</p>
                         </div>
                         <Truck size={36} className="text-[#FF860B]/70" />
                     </div>

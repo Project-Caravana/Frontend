@@ -37,7 +37,7 @@ const Layout = ({ children }) => {
                 
                 {/* Logo / Título da Aplicação */}
                 <div className="flex items-center justify-center h-16 border-b border-gray-200">
-                    <span className="text-xl font-bold text-[#002970]">App Name</span>
+                    <span className="text-xl font-bold text-[#002970]">{funcionario.empresa}</span>
                 </div>
                 
                 {/* Seção de Perfil do Usuário */}

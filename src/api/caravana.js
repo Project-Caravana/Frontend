@@ -10,7 +10,7 @@ export const getEmpresaDashboard = (empresaId) => {
     // Adiciona o token de autorização ao cabeçalho (necessário para a maioria das rotas protegidas)
     const accessToken = localStorage.getItem('accessToken');
     
-    return api.get(`/empresa/dashboard/${empresaId}`, {
+    return api.get(`/empresa/${empresaId}/dashboard`, {
         headers: {
             Authorization: `Bearer ${accessToken}`
         }
