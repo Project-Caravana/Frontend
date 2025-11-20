@@ -3,15 +3,18 @@ import { useNavigate, Link } from 'react-router-dom';
 import { LogIn, Mail, Lock } from 'lucide-react';
 import Input from '../components/form/Input';
 import useForm from '../hooks/useForm';
-import { login } from '../api/caravana.js'
-import useToast from '../hooks/useToast';
+import { login as loginApi } from '../api/caravana.js'
+import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext';
  
 const Login = () => {
     const email = useForm('email');
     const senha = useForm();
-    const { showToast, ToastContainer } = useToast();
     const [logging, setLogging] = React.useState(false);
     const navigate = useNavigate();
+    const { login } = useAuth();
+
+
 
     const handleSubmit = async() => {
         setLogging(true);
@@ -21,22 +24,23 @@ const Login = () => {
                 senha: senha.value
             }
             
-            const response = await login(payload);
+            const response = await loginApi(payload);
             
             if (response.data.accessToken) {
                 localStorage.setItem('accessToken', response.data.accessToken);
                 localStorage.setItem('funcionario', JSON.stringify(response.data.funcionario));
+                
+                // Atualiza o contexto de autenticação
+                login(response.data.funcionario);
             }
             
-            showToast('Login realizado com sucesso!', 'success');
+            toast.success('Login realizado com sucesso!');
             
-            setTimeout(() => {
-                navigate('/dashboard');
-            }, 1000);
+            navigate('/dashboard');
             
         } catch (error) {
             const message = error.response?.data?.message || 'Dados Inválidos.';
-            showToast(message, 'error');
+            toast.error(message);
         } finally {
             setLogging(false);
         }
@@ -50,7 +54,6 @@ const Login = () => {
 
     return (
         <>
-            <ToastContainer />
             <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-[#FF860B]/10 flex items-center justify-center p-4">
                 <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
                     {/* Header */}

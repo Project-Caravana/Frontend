@@ -5,6 +5,31 @@ const api = axios.create({
         "Content-Type":"application/json"
     }
 })
+
+export const getEmpresaId = () => {
+    try {
+        const funcionarioString = localStorage.getItem('funcionario');
+        if (funcionarioString) {
+            const funcionario = JSON.parse(funcionarioString);
+            return funcionario.empresaId; 
+        }
+        return null;
+    } catch{
+        return null;
+    }
+};
+
+export const getEmpresaDashboard = (empresaId) => {
+    // Adiciona o token de autorização ao cabeçalho (necessário para a maioria das rotas protegidas)
+    const accessToken = localStorage.getItem('accessToken');
+    
+    return api.get(`/empresa/${empresaId}/dashboard`, {
+        headers: {
+            Authorization: `Bearer ${accessToken}`
+        }
+    });
+}
+
 // export const getTodos = ()=>api.get("/getAll");
 export const registerAdmin = (payload)=>api.post("/auth/register", payload);
 export const login = (payload)=>api.post("/auth/login", payload);

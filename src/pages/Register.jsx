@@ -4,14 +4,13 @@ import { ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import Step from '../components/Step';
 import FormRegister from '../components/FormRegister';
 import FormRegister2 from '../components/FormRegister2';
-import useToast from '../hooks/useToast';
 import { registerAdmin } from '../api/caravana.js';
+import { toast } from 'react-toastify';
 
 const Register = () => {
     const [step, setStep] = React.useState(1);
     const [formData, setFormData] = React.useState({});
     const [registering, setRegistering] = React.useState(false);
-    const { showToast, ToastContainer } = useToast();
 
     const navigate = useNavigate();
 
@@ -37,11 +36,11 @@ const Register = () => {
         // Por hora, mantenho a lógica simples de preenchimento, mas idealmente seria validar o formato aqui também.
 
         if (!nome || !cpf || !email || !telefone || !senha || !confirm) {
-            showToast('Por favor, preencha todos os campos', 'error');
+            toast.error('Por favor, preencha todos os campos', 'error');
             return false;
         }
         if (senha !== confirm) {
-            showToast('As senhas não coincidem', 'error');
+            toast.error('As senhas não coincidem', 'error');
             return false;
         }
         return true;
@@ -53,7 +52,7 @@ const Register = () => {
         // Idealmente, adicionar validação de formato aqui também.
 
         if (!empresa || !cnpj || !telefoneEmpresa || !empresaEnderecoRua || !empresaEnderecoNumero || !empresaEnderecoBairro || !empresaEnderecoCidade || !empresaEnderecoEstado || !empresaEnderecoCep) {
-            showToast('Por favor, preencha todos os campos da empresa', 'error');
+            toast.error('Por favor, preencha todos os campos da empresa', 'error');
             return false;
         }
         return true;
@@ -62,7 +61,7 @@ const Register = () => {
     const handleNext = () => {
         if (step === 1 && validateStep1()) {
             setStep(2);
-            showToast('Primeira etapa concluída!', 'success');
+            toast.success('Primeira etapa concluída!', 'success');
         }
     };
 
@@ -102,7 +101,7 @@ const Register = () => {
             const response = await registerAdmin(payload);
             console.log('✅ Resposta:', response.data);
             
-            showToast('Cadastro realizado com sucesso!', 'success');
+            toast.success('Cadastro realizado com sucesso!', 'success');
             
             // Resetar formulário
             setTimeout(() => {
@@ -119,7 +118,7 @@ const Register = () => {
                 || error.response?.data?.erro
                 || error.message 
                 || 'Erro desconhecido';
-            showToast('Falha ao registrar: ' + errorMessage, 'error');
+            toast.error('Falha ao registrar: ' + errorMessage, 'error');
         } finally {
             setRegistering(false);
         }
@@ -132,7 +131,6 @@ const Register = () => {
 
     return (
         <>
-            <ToastContainer />
             <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-[#FF860B]/10 flex items-center justify-center p-4">
                 <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-8">
                     <div className="text-center mb-8">
