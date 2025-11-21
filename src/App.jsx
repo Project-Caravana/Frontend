@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext"
 import Register from "./pages/Register";
+import Vehicles from "./pages/Vehicles";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import { ToastContainer } from 'react-toastify';
@@ -86,6 +87,7 @@ function App() {
             <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/veiculos" element={<ProtectedRoute><Vehicles /></ProtectedRoute>} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
