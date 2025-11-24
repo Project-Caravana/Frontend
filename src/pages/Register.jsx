@@ -108,7 +108,7 @@ const Register = () => {
                 setStep(1);
                 setFormData({});
                 navigate("/login");
-            }, 2000);
+            }, 100);
             
         } catch (error) {
             console.error('❌ Erro:', error);

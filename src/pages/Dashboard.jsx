@@ -38,9 +38,9 @@ const Dashboard = () => {
                 const data = response.data.estatisticas;
                 
                 setDashboardData({
-                    totalCarrosAtivos: data.carros?.ativos || 0,
+                    totalCarrosAtivos: data.carros?.total || 0,
                     combustivelGasto: data.combustivel?.gastoMes || 0,
-                    kmRodado: data.km?.rodadoMes || 0,
+                    kmRodado: data.carros?.rodadoMes || 0,
                     consumoMedio: data.combustivel?.consumoMedio || 0,
                     alertas: data.alertas?.total || 0,
                     carrosConsumo: data.carros?.topConsumo || []

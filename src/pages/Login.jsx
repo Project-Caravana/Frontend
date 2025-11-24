@@ -25,13 +25,15 @@ const Login = () => {
             }
             
             const response = await loginApi(payload);
-            
-            if (response.data.accessToken) {
-                localStorage.setItem('accessToken', response.data.accessToken);
+
+            // Lógica Nova (CORRETA com HttpOnly):
+            // O backend define o cookie. O frontend só precisa do objeto funcionário.
+            if (response.data.funcionario) {
+                // O perfil (role) é crucial para renderização, salve no localStorage
                 localStorage.setItem('funcionario', JSON.stringify(response.data.funcionario));
-                
-                // Atualiza o contexto de autenticação
-                login(response.data.funcionario);
+
+                // Atualiza o contexto de autenticação com o objeto funcionario
+                login(response.data.funcionario); // Função que atualiza o estado em AuthContext
             }
             
             toast.success('Login realizado com sucesso!');
