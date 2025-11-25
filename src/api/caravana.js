@@ -78,8 +78,12 @@ export const updateEmpresa = async (empresaId, data) => {
     return await api.put(`/empresa/${empresaId}`, data);
 };
 
-export const getEmpresaDashboard = async (empresaId) => {
-    return await api.get(`/empresa/${empresaId}/dashboard`);
+export const getEstatisticasEmpresa = async () => {
+    return await api.get('/vehicle/estatisticas-empresa');
+};
+
+export const getEmpresaDashboard = async () => {
+    return await getEstatisticasEmpresa();
 };
 
 // ============================================

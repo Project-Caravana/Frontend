@@ -1,6 +1,6 @@
 import React from 'react';
 import Layout from '../components/layout/Layout';
-import { getEmpresaDashboard, getEmpresaId } from '../api/caravana.js'; 
+import { getEstatisticasEmpresa } from '../api/caravana.js'; 
 import { Truck, AlertTriangle, Fuel, Navigation, TrendingUp } from 'lucide-react';
 import Chart from 'react-apexcharts';
 
@@ -14,6 +14,7 @@ const Dashboard = () => {
         carrosConsumo: []
     });
     const [loading, setLoading] = React.useState(true);
+    const [error, setError] = React.useState(null);
 
     // Data atual formatada
     const dataHoje = new Date().toLocaleDateString('pt-BR', {
@@ -24,30 +25,29 @@ const Dashboard = () => {
     });
 
     React.useEffect(() => {
-        const empresaId = getEmpresaId();
-        
-        if (!empresaId) {
-            setLoading(false);
-            return;
-        }
-
         const fetchDashboardData = async () => {
             setLoading(true);
+            setError(null);
+            
             try {
-                const response = await getEmpresaDashboard(empresaId);
+                console.log('📊 Buscando estatísticas do dashboard...');
+                const response = await getEstatisticasEmpresa();
                 const data = response.data.estatisticas;
                 
+                console.log('✅ Dados recebidos:', data);
+                
                 setDashboardData({
-                    totalCarrosAtivos: data.carros?.total || 0,
-                    combustivelGasto: data.combustivel?.gastoMes || 0,
-                    kmRodado: data.carros?.rodadoMes || 0,
-                    consumoMedio: data.combustivel?.consumoMedio || 0,
-                    alertas: data.alertas?.total || 0,
-                    carrosConsumo: data.carros?.topConsumo || []
+                    totalCarrosAtivos: data.totalCarrosAtivos || 0,
+                    combustivelGasto: data.combustivelGasto || 0,
+                    kmRodado: data.kmRodado || 0,
+                    consumoMedio: data.consumoMedio || 0,
+                    alertas: data.alertas || 0,
+                    carrosConsumo: data.carrosConsumo || []
                 });
 
             } catch (error) {
-                console.error('Erro ao buscar dashboard:', error);
+                console.error('❌ Erro ao buscar dashboard:', error);
+                setError(error.response?.data?.message || 'Erro ao carregar dados');
             } finally {
                 setLoading(false);
             }
@@ -87,7 +87,9 @@ const Dashboard = () => {
             }
         },
         xaxis: {
-            categories: dashboardData.carrosConsumo.map(c => c.modelo || c.placa || 'Veículo'),
+            categories: dashboardData.carrosConsumo.map(c => 
+                `${c.marca} ${c.modelo}`.trim() || c.placa || 'Veículo'
+            ),
             title: {
                 text: 'Consumo (km/L)'
             }
@@ -98,7 +100,7 @@ const Dashboard = () => {
             }
         },
         title: {
-            text: 'Carros que mais consomem combustível',
+            text: 'Top 5 - Carros com maior consumo de combustível',
             align: 'left',
             style: {
                 fontSize: '16px',
@@ -108,6 +110,19 @@ const Dashboard = () => {
         },
         grid: {
             borderColor: '#e5e7eb'
+        },
+        tooltip: {
+            y: {
+                // eslint-disable-next-line no-unused-vars
+                formatter: function (val, { seriesIndex, dataPointIndex, w }) {
+                    const carro = dashboardData.carrosConsumo[dataPointIndex];
+                    return `
+                        Consumo: ${val.toFixed(1)} km/L<br>
+                        Km Rodado: ${carro?.kmRodado || 0} km<br>
+                        Combustível: ${carro?.combustivelGasto || 0} L
+                    `;
+                }
+            }
         }
     };
 
@@ -139,6 +154,27 @@ const Dashboard = () => {
         </div>
     );
 
+    // Mensagem de erro
+    if (error) {
+        return (
+            <Layout>
+                <div className="min-h-[60vh] flex items-center justify-center">
+                    <div className="text-center">
+                        <AlertTriangle size={48} className="text-red-500 mx-auto mb-4" />
+                        <h2 className="text-2xl font-bold text-gray-800 mb-2">Erro ao carregar dados</h2>
+                        <p className="text-gray-600 mb-4">{error}</p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="px-6 py-2 bg-[#002970] text-white rounded-lg hover:bg-blue-800 transition-colors"
+                        >
+                            Tentar novamente
+                        </button>
+                    </div>
+                </div>
+            </Layout>
+        );
+    }
+
     return (
         <Layout>
             <div className="space-y-6">
@@ -166,7 +202,7 @@ const Dashboard = () => {
                                     </p>
                                 )}
                                 <p className="text-sm text-gray-600 mt-2">
-                                    {dashboardData.alertas > 0 ? 'Requerem atenção' : 'Tudo ok!'}
+                                    {dashboardData.alertas > 0 ? 'Últimos 30 dias' : 'Tudo ok!'}
                                 </p>
                             </div>
                         </div>
@@ -182,7 +218,7 @@ const Dashboard = () => {
                     
                     {/* Km Rodado */}
                     <MetricCard 
-                        title="Km Rodado pela Frota no Mês"
+                        title="Km Rodado (Mês Atual)"
                         value={dashboardData.kmRodado}
                         icon={Navigation}
                         color="text-green-600"
@@ -209,7 +245,10 @@ const Dashboard = () => {
                             <div className="h-96 flex items-center justify-center text-gray-500">
                                 <div className="text-center">
                                     <Truck size={48} className="mx-auto mb-4 text-gray-300" />
-                                    <p>Nenhum dado de consumo disponível</p>
+                                    <p className="text-lg font-semibold mb-2">Nenhum dado de consumo disponível</p>
+                                    <p className="text-sm text-gray-400">
+                                        Os dados aparecerão quando houver leituras OBD registradas
+                                    </p>
                                 </div>
                             </div>
                         )}
@@ -218,7 +257,7 @@ const Dashboard = () => {
                     {/* Coluna Direita - Cards de Combustível - 1 coluna */}
                     <div className="lg:col-span-1 flex flex-col gap-6">
                         <MetricCard 
-                            title="Combustível Gasto (mês)"
+                            title="Combustível Gasto (Mês)"
                             value={dashboardData.combustivelGasto}
                             icon={Fuel}
                             color="text-orange-600"
@@ -226,8 +265,8 @@ const Dashboard = () => {
                         />
                         
                         <MetricCard 
-                            title="Consumo Médio de Combustível"
-                            value={dashboardData.consumoMedio.toFixed(1)}
+                            title="Consumo Médio da Frota"
+                            value={dashboardData.consumoMedio.toFixed(2)}
                             icon={TrendingUp}
                             color="text-purple-600"
                             suffix="km/L"
