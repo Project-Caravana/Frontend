@@ -1,11 +1,14 @@
 import axios from "axios";
 
+// Usa variável de ambiente para a URL da API
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
 const api = axios.create({
-    baseURL: "http://localhost:3000/api",
+    baseURL: `${API_URL}/api`,
     headers: {
         "Content-Type": "application/json"
     },
-    withCredentials: true, // Isso garante que os cookies sejam enviados
+    withCredentials: true,
 });
 
 let isLoggingOut = false;
@@ -16,19 +19,15 @@ const handleLogout = () => {
     
     isLoggingOut = true;
     
-    // Limpa o localStorage
     localStorage.removeItem('funcionario');
-    
-    // Redireciona para login
     window.location.href = '/login';
     
-    // Reseta a flag após um tempo
     setTimeout(() => {
         isLoggingOut = false;
     }, 1000);
 };
 
-// Interceptor de resposta - Trata erros de autenticação
+// Interceptor de resposta
 api.interceptors.response.use(
     (response) => {
         return response;
@@ -39,11 +38,9 @@ api.interceptors.response.use(
         
         console.error('Erro na requisição:', status, message);
         
-        // Se receber 401 (não autorizado), faz logout automático
         if (status === 401) {
             console.warn('🔒 Sessão expirada ou inválida. Fazendo logout...');
             
-            // Faz logout apenas se não for a rota de login
             if (!error.config.url.includes('/auth/login')) {
                 handleLogout();
             }
@@ -142,7 +139,6 @@ export const getAlertasOBD = async (carroId, params = {}) => {
 // FUNCIONÁRIOS
 // ============================================
 
-// Busca dados do usuário autenticado (valida pelo cookie)
 export const getMe = async () => {
     return await api.get('/auth/me');
 };
