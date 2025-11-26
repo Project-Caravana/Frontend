@@ -3,7 +3,7 @@ import { logout as logoutApi, getMe } from '../api/caravana';
 
 const AuthContext = createContext();
 
-//eslint-disable-next-line react-refresh/only-export-components
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const c = useContext(AuthContext);
   if (!c) throw new Error('useAuth must be used within AuthProvider');
@@ -19,6 +19,7 @@ export const AuthProvider = ({ children }) => {
   const clearState = () => {
     console.log('🧹 Limpando estado...');
     localStorage.removeItem('funcionario');
+    localStorage.removeItem('auth_token'); // ⭐ Remove token
     setIsAuthenticated(false);
     setUser(null);
   };
@@ -38,6 +39,13 @@ export const AuthProvider = ({ children }) => {
   // Valida sessão com o backend
   const validateSession = async () => {
     try {
+      // ✅ Verifica se tem token
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        console.log('ℹ️ Token não encontrado');
+        return false;
+      }
+
       const response = await getMe();
       
       if (!response.data || !response.data.funcionario) {
@@ -77,9 +85,10 @@ export const AuthProvider = ({ children }) => {
     console.log('🔐 Iniciando verificação de autenticação...');
     
     try {
+      const token = localStorage.getItem('auth_token');
       const funcionarioStr = localStorage.getItem('funcionario');
       
-      if (!funcionarioStr) {
+      if (!token || !funcionarioStr) {
         console.log('ℹ️ Nenhum usuário autenticado no localStorage');
         setLoading(false);
         return;

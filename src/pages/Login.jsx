@@ -14,8 +14,6 @@ const Login = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
 
-
-
     const handleSubmit = async() => {
         setLogging(true);
         try {
@@ -26,18 +24,18 @@ const Login = () => {
             
             const response = await loginApi(payload);
 
-            // Lógica Nova (CORRETA com HttpOnly):
-            // O backend define o cookie. O frontend só precisa do objeto funcionário.
-            if (response.data.funcionario) {
-                // O perfil (role) é crucial para renderização, salve no localStorage
-                localStorage.setItem('funcionario', JSON.stringify(response.data.funcionario));
+            // ✅ MUDANÇA CRÍTICA: Salva o TOKEN retornado pelo backend
+            if (response.data.token) {
+                localStorage.setItem('auth_token', response.data.token);
+            }
 
-                // Atualiza o contexto de autenticação com o objeto funcionario
-                login(response.data.funcionario); // Função que atualiza o estado em AuthContext
+            // Salva os dados do funcionário
+            if (response.data.funcionario) {
+                localStorage.setItem('funcionario', JSON.stringify(response.data.funcionario));
+                login(response.data.funcionario);
             }
             
             toast.success('Login realizado com sucesso!');
-            
             navigate('/dashboard');
             
         } catch (error) {
@@ -58,7 +56,6 @@ const Login = () => {
         <>
             <div className="min-h-screen bg-gradient-to-br from-gray-100 via-white to-[#FF860B]/10 flex items-center justify-center p-4">
                 <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
-                    {/* Header */}
                     <div className="text-center mb-8">
                         <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#002970] to-[#FF860B] rounded-full mb-4">
                             <LogIn size={32} className="text-white" />
@@ -67,7 +64,6 @@ const Login = () => {
                         <p className="text-gray-600">Entre com suas credenciais para acessar</p>
                     </div>
 
-                    {/* Form */}
                     <div className="space-y-4" onKeyPress={handleKeyPress}>
                         <Input 
                             type="email" 
@@ -88,7 +84,6 @@ const Login = () => {
                             {...senha} 
                         />
 
-                        {/* Forgot Password Link */}
                         <div className="flex justify-end">
                             <Link 
                                 to="/esqueci-senha" 
@@ -98,7 +93,6 @@ const Login = () => {
                             </Link>
                         </div>
 
-                        {/* Login Button */}
                         <button 
                             type="button"
                             disabled={logging} 
@@ -121,7 +115,6 @@ const Login = () => {
                         </button>
                     </div>
 
-                    {/* Divider */}
                     <div className="relative my-6">
                         <div className="absolute inset-0 flex items-center">
                             <div className="w-full border-t border-gray-300"></div>
@@ -131,7 +124,6 @@ const Login = () => {
                         </div>
                     </div>
 
-                    {/* Register Link */}
                     <Link 
                         to="/register"
                         className="w-full py-3 px-6 rounded-lg border-2 border-[#002970] text-[#002970] font-medium hover:bg-[#002970] hover:text-white transition-all duration-200 flex items-center justify-center gap-2"

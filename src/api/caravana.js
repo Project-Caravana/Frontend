@@ -1,6 +1,5 @@
 import axios from "axios";
 
-// Usa variável de ambiente para a URL da API
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const api = axios.create({
@@ -8,18 +7,42 @@ const api = axios.create({
     headers: {
         "Content-Type": "application/json"
     },
-    withCredentials: true,
+    withCredentials: false, // ⭐ Mudança: não precisa mais de cookies
 });
 
 let isLoggingOut = false;
 
-// Função para fazer logout e limpar estado
+// ✅ FUNÇÃO: Pega o token do localStorage
+const getToken = () => {
+    try {
+        return localStorage.getItem('auth_token');
+    } catch (error) {
+        console.error('Erro ao buscar token:', error);
+        return null;
+    }
+};
+
+// ✅ INTERCEPTOR DE REQUEST: Adiciona token no header
+api.interceptors.request.use(
+    (config) => {
+        const token = getToken();
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
 const handleLogout = () => {
     if (isLoggingOut) return;
     
     isLoggingOut = true;
     
     localStorage.removeItem('funcionario');
+    localStorage.removeItem('auth_token'); // ⭐ Remove token também
     window.location.href = '/login';
     
     setTimeout(() => {
