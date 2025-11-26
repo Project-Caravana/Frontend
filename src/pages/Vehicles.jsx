@@ -21,7 +21,7 @@ const FormModal = ({
     if (!showFormModal) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
             <div className="bg-white rounded-lg shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
                 <div className="bg-gradient-to-r from-[#002970] to-[#FF860B] p-6 text-white sticky top-0">
                     <div className="flex justify-between items-center">
@@ -179,18 +179,35 @@ const Vehicles = () => {
     useEffect(() => { fetchVeiculos(); }, []);
 
     useEffect(() => {
-        if (!socket || !isConnected) return;
-        veiculos.carros?.forEach(veiculo => { socket.emit('subscribe', veiculo._id); });
+        if (!socket || !isConnected || !showModal || !selectedVeiculo) return;
+        
+        // Inscrever apenas no veículo selecionado
+        socket.emit('subscribe', selectedVeiculo._id);
+        
+        // Atualizar apenas o veículo selecionado
         socket.on('obd:atualizado', (data) => {
-            setVeiculos(prevVeiculos => ({
-                ...prevVeiculos,
-                carros: prevVeiculos.carros?.map(veiculo => 
-                    veiculo._id === data.carroId ? { ...veiculo, dadosOBD: data.dadosOBD, kmTotal: data.kmTotal } : veiculo
-                ) || []
-            }));
+            if (data.carroId === selectedVeiculo._id) {
+                setSelectedVeiculo(prev => ({
+                    ...prev,
+                    dadosOBD: data.dadosOBD,
+                    kmTotal: data.kmTotal
+                }));
+                
+                // Atualizar também na lista principal
+                setVeiculos(prevVeiculos => ({
+                    ...prevVeiculos,
+                    carros: prevVeiculos.carros?.map(veiculo => 
+                        veiculo._id === data.carroId ? { ...veiculo, dadosOBD: data.dadosOBD, kmTotal: data.kmTotal } : veiculo
+                    ) || []
+                }));
+            }
         });
-        return () => { socket.off('obd:atualizado'); };
-    }, [socket, isConnected, veiculos.carros]);
+        
+        return () => {
+            socket.off('obd:atualizado');
+            socket.emit('unsubscribe', selectedVeiculo._id);
+        };
+    }, [socket, isConnected, showModal, selectedVeiculo]);
 
     const fetchVeiculos = async () => {
         setLoading(true);
@@ -349,7 +366,7 @@ const Vehicles = () => {
         if (!showModal || !selectedVeiculo) return null;
 
         return (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
                 <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                     <div className="bg-gradient-to-r from-[#002970] to-[#FF860B] p-6 text-white">
                         <div className="flex justify-between items-start">

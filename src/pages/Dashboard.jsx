@@ -56,6 +56,23 @@ const Dashboard = () => {
         fetchDashboardData();
     }, []);
 
+    // 🚀 LÓGICA DE ORDENAÇÃO E FILTRAGEM PARA O GRÁFICO
+    const carrosMaisConsumo = React.useMemo(() => {
+        // 1. Faz uma cópia para não modificar o estado original
+        const data = [...dashboardData.carrosConsumo];
+
+        // 2. FILTRAGEM: Remove leituras irreais, nulas ou iguais a zero (onde o consumo não é maior que zero)
+        const dataFiltrada = data.filter(c => c.consumo && c.consumo > 0);
+
+        // 3. Ordena em ordem crescente pelo consumo (km/L).
+        // Um valor de consumo menor (a.consumo - b.consumo) indica maior gasto de combustível.
+        dataFiltrada.sort((a, b) => a.consumo - b.consumo);
+
+        // 4. Retorna apenas os top 5 (carros que mais gastam combustível)
+        return dataFiltrada.slice(0, 5);
+    }, [dashboardData.carrosConsumo]);
+    // ----------------------------------------------------
+
     // Configuração do gráfico ApexCharts
     const chartOptions = {
         chart: {
@@ -87,7 +104,8 @@ const Dashboard = () => {
             }
         },
         xaxis: {
-            categories: dashboardData.carrosConsumo.map(c => 
+            // Usa os dados ordenados e limitados
+            categories: carrosMaisConsumo.map(c => 
                 `${c.marca} ${c.modelo}`.trim() || c.placa || 'Veículo'
             ),
             title: {
@@ -100,7 +118,7 @@ const Dashboard = () => {
             }
         },
         title: {
-            text: 'Top 5 - Carros com maior consumo de combustível',
+            text: 'Top 5 - Carros com maior gasto de combustível (Menor km/L)',
             align: 'left',
             style: {
                 fontSize: '16px',
@@ -115,7 +133,8 @@ const Dashboard = () => {
             y: {
                 // eslint-disable-next-line no-unused-vars
                 formatter: function (val, { seriesIndex, dataPointIndex, w }) {
-                    const carro = dashboardData.carrosConsumo[dataPointIndex];
+                    // Usa os dados ordenados e limitados para o tooltip
+                    const carro = carrosMaisConsumo[dataPointIndex];
                     return `
                         Consumo: ${val.toFixed(1)} km/L<br>
                         Km Rodado: ${carro?.kmRodado || 0} km<br>
@@ -128,7 +147,8 @@ const Dashboard = () => {
 
     const chartSeries = [{
         name: 'Consumo',
-        data: dashboardData.carrosConsumo.map(c => c.consumo || 0)
+        // Usa os dados ordenados e limitados
+        data: carrosMaisConsumo.map(c => c.consumo || 0)
     }];
 
     // Card de métrica reutilizável
@@ -234,7 +254,7 @@ const Dashboard = () => {
                             <div className="h-96 flex items-center justify-center">
                                 <div className="w-12 h-12 border-4 border-gray-200 border-t-[#FF860B] rounded-full animate-spin"></div>
                             </div>
-                        ) : dashboardData.carrosConsumo.length > 0 ? (
+                        ) : carrosMaisConsumo.length > 0 ? ( // Verifica os dados processados
                             <Chart
                                 options={chartOptions}
                                 series={chartSeries}
